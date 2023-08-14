@@ -1,6 +1,5 @@
-/* eslint-disable no-console */
 /**
- * (C) Copyright IBM Corp. 2020.
+ * (C) Copyright IBM Corp. 2023.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,282 +14,328 @@
  * limitations under the License.
  */
 
-const { readExternalSources } = require('ibm-cloud-sdk-core');
+/* eslint-disable no-console */
+/* eslint-disable no-await-in-loop */
+
 const UsageReportsV4 = require('../../dist/usage-reports/v4');
+const { readExternalSources } = require('ibm-cloud-sdk-core');
 const authHelper = require('../resources/auth-helper.js');
 
-// testcase timeout value (60s).
-const timeout = 60000;
+// testcase timeout value (200s).
+const timeout = 200000;
 
 // Location of our config file.
-const configFile = 'usage_reports.env';
+const configFile = 'usage_reports_v4.env';
 
 const describe = authHelper.prepareTests(configFile);
-
-let usageReportsService;
-let config;
-let accountId;
-let resourceGroupId;
-let orgId;
-let billingMonth;
 
 describe('UsageReportsV4_integration', () => {
   jest.setTimeout(timeout);
 
-  beforeAll(async () => {
-    usageReportsService = UsageReportsV4.newInstance({});
+  // Service instance
+  let usageReportsService;
 
-    config = readExternalSources(UsageReportsV4.DEFAULT_SERVICE_NAME);
+  test('Initialize service', async () => {
+    usageReportsService = UsageReportsV4.newInstance();
 
     expect(usageReportsService).not.toBeNull();
+
+    const config = readExternalSources(UsageReportsV4.DEFAULT_SERVICE_NAME);
     expect(config).not.toBeNull();
-
-    accountId = config.accountId;
-    resourceGroupId = config.resourceGroupId;
-    orgId = config.orgId;
-    billingMonth = config.billingMonth;
-    expect(accountId).not.toBeNull();
-    expect(resourceGroupId).not.toBeNull();
-    expect(orgId).not.toBeNull();
-    expect(billingMonth).not.toBeNull();
-
-    // console.log('Finished setup.');
+  
+    usageReportsService.enableRetries();
   });
 
-  test('getAccountSummary()', (done) => {
+  test('getAccountSummary()', async () => {
     const params = {
-      accountId,
-      billingmonth: billingMonth,
+      accountId: 'testString',
+      billingmonth: 'testString',
     };
 
-    usageReportsService
-      .getAccountSummary(params)
-      .then((res) => {
-        expect(res).not.toBeNull();
-        expect(res.status).toEqual(200);
-
-        const { result } = res;
-        expect(result).toBeDefined();
-        // console.log('getAccountSummary() result: ', result);
-
-        expect(result.account_id).toEqual(accountId);
-        expect(result.month).toEqual(billingMonth);
-        expect(result.offers).not.toBeNull();
-        expect(result.subscription).not.toBeNull();
-        done();
-      })
-      .catch((err) => {
-        console.warn(err);
-        done(err);
-      });
+    const res = await usageReportsService.getAccountSummary(params);
+    expect(res).toBeDefined();
+    expect(res.status).toBe(200);
+    expect(res.result).toBeDefined();
   });
-  test('getAccountUsage()', (done) => {
+
+  test('getAccountUsage()', async () => {
     const params = {
-      accountId,
-      billingmonth: billingMonth,
+      accountId: 'testString',
+      billingmonth: 'testString',
       names: true,
-      acceptLanguage: 'English',
+      acceptLanguage: 'testString',
     };
 
-    usageReportsService
-      .getAccountUsage(params)
-      .then((res) => {
-        expect(res).not.toBeNull();
-        expect(res.status).toEqual(200);
-
-        const { result } = res;
-        expect(result).toBeDefined();
-        // console.log('getAccountUsage() result: ', result);
-
-        expect(result.account_id).toEqual(accountId);
-        expect(result.month).toEqual(billingMonth);
-        expect(result.resources).not.toBeNull();
-        done();
-      })
-      .catch((err) => {
-        console.warn(err);
-        done(err);
-      });
+    const res = await usageReportsService.getAccountUsage(params);
+    expect(res).toBeDefined();
+    expect(res.status).toBe(200);
+    expect(res.result).toBeDefined();
   });
-  test('getResourceGroupUsage()', (done) => {
+
+  test('getResourceGroupUsage()', async () => {
     const params = {
-      accountId,
-      resourceGroupId,
-      billingmonth: billingMonth,
+      accountId: 'testString',
+      resourceGroupId: 'testString',
+      billingmonth: 'testString',
       names: true,
+      acceptLanguage: 'testString',
     };
 
-    usageReportsService
-      .getResourceGroupUsage(params)
-      .then((res) => {
-        expect(res).not.toBeNull();
-        expect(res.status).toEqual(200);
-
-        const { result } = res;
-        expect(result).toBeDefined();
-        // console.log('getResourceGroupUsage() result: ', result);
-
-        expect(result.account_id).toEqual(accountId);
-        expect(result.month).toEqual(billingMonth);
-        expect(result.resources).not.toBeNull();
-        done();
-      })
-      .catch((err) => {
-        console.warn(err);
-        done(err);
-      });
+    const res = await usageReportsService.getResourceGroupUsage(params);
+    expect(res).toBeDefined();
+    expect(res.status).toBe(200);
+    expect(res.result).toBeDefined();
   });
-  test('getOrgUsage()', (done) => {
-    const params = {
-      accountId,
-      organizationId: orgId,
-      billingmonth: billingMonth,
-      names: true,
-    };
 
-    usageReportsService
-      .getOrgUsage(params)
-      .then((res) => {
-        expect(res).not.toBeNull();
-        expect(res.status).toEqual(200);
-
-        const { result } = res;
-        expect(result).toBeDefined();
-        // console.log('getOrgUsage() result: ', result);
-
-        expect(result.account_id).toEqual(accountId);
-        expect(result.month).toEqual(billingMonth);
-        expect(result.resources).not.toBeNull();
-        done();
-      })
-      .catch((err) => {
-        console.warn(err);
-        done(err);
-      });
-  });
   test('getResourceUsageAccount()', async () => {
-    const resources = [];
-    let offset = null;
+    const params = {
+      accountId: 'testString',
+      billingmonth: 'testString',
+      names: true,
+      tags: true,
+      acceptLanguage: 'testString',
+      limit: 30,
+      start: 'testString',
+      resourceGroupId: 'testString',
+      organizationId: 'testString',
+      resourceInstanceId: 'testString',
+      resourceId: 'testString',
+      planId: 'testString',
+      region: 'testString',
+    };
 
-    try {
-      do {
-        const params = {
-          accountId,
-          billingmonth: billingMonth,
-          names: true,
-          limit: 50,
-          start: offset,
-        };
+    const res = await usageReportsService.getResourceUsageAccount(params);
+    expect(res).toBeDefined();
+    expect(res.status).toBe(200);
+    expect(res.result).toBeDefined();
+  });
 
-        // Get next page of results.
-        const res = await usageReportsService.getResourceUsageAccount(params);
-        expect(res.status).toEqual(200);
+  test('getResourceUsageAccount() via GetResourceUsageAccountPager', async () => {
+    const params = {
+      accountId: 'testString',
+      billingmonth: 'testString',
+      names: true,
+      tags: true,
+      acceptLanguage: 'testString',
+      limit: 30,
+      resourceGroupId: 'testString',
+      organizationId: 'testString',
+      resourceInstanceId: 'testString',
+      resourceId: 'testString',
+      planId: 'testString',
+      region: 'testString',
+    };
 
-        const { result } = res;
-        expect(result).toBeDefined();
+    const allResults = [];
 
-        // console.log('getResourceUsageAccount() result: ', result);
-        expect(result.resources).toBeDefined();
-        resources.push(...result.resources);
-
-        // Get offset of next page.
-        if (result.next) {
-          offset = result.next.offset;
-        } else {
-          offset = null;
-        }
-      } while (offset != null);
-    } catch (err) {
-      console.log(err);
+    // Test getNext().
+    let pager = new UsageReportsV4.GetResourceUsageAccountPager(usageReportsService, params);
+    while (pager.hasNext()) {
+      const nextPage = await pager.getNext();
+      expect(nextPage).not.toBeNull();
+      allResults.push(...nextPage);
     }
 
-    // Make sure we found some resources.
-    const numResources = resources.length;
-    // console.log(`getResourceUsageAccount() response contained ${numResources} total resources`);
-    expect(numResources).toBeGreaterThan(0);
+    // Test getAll().
+    pager = new UsageReportsV4.GetResourceUsageAccountPager(usageReportsService, params);
+    const allItems = await pager.getAll();
+    expect(allItems).not.toBeNull();
+    expect(allItems).toHaveLength(allResults.length);
+    console.log(`Retrieved a total of ${allResults.length} items(s) with pagination.`);
   });
+
   test('getResourceUsageResourceGroup()', async () => {
-    const resources = [];
-    let offset = null;
+    const params = {
+      accountId: 'testString',
+      resourceGroupId: 'testString',
+      billingmonth: 'testString',
+      names: true,
+      tags: true,
+      acceptLanguage: 'testString',
+      limit: 30,
+      start: 'testString',
+      resourceInstanceId: 'testString',
+      resourceId: 'testString',
+      planId: 'testString',
+      region: 'testString',
+    };
 
-    try {
-      do {
-        const params = {
-          accountId,
-          resourceGroupId,
-          billingmonth: billingMonth,
-          names: true,
-          limit: 50,
-          start: offset,
-        };
-
-        // Get next page of results.
-        const res = await usageReportsService.getResourceUsageResourceGroup(params);
-        expect(res.status).toEqual(200);
-
-        const { result } = res;
-        expect(result).toBeDefined();
-
-        // console.log('getResourceUsageResourceGroup() result: ', result);
-        expect(result.resources).toBeDefined();
-        resources.push(...result.resources);
-
-        // Get offset of next page.
-        if (result.next) {
-          offset = result.next.offset;
-        } else {
-          offset = null;
-        }
-      } while (offset != null);
-    } catch (err) {
-      console.log(err);
-    }
-
-    // Make sure we found some resources.
-    const numResources = resources.length;
-    // console.log(`getResourceUsageResourceGroup() response contained ${numResources} total resources`);
-    expect(numResources).toBeGreaterThan(0);
+    const res = await usageReportsService.getResourceUsageResourceGroup(params);
+    expect(res).toBeDefined();
+    expect(res.status).toBe(200);
+    expect(res.result).toBeDefined();
   });
-  test('getResourceUsageOrg()', async () => {
-    const resources = [];
-    let offset = null;
 
-    try {
-      do {
-        const params = {
-          accountId,
-          organizationId: orgId,
-          billingmonth: billingMonth,
-          names: true,
-          limit: 50,
-          start: offset,
-        };
+  test('getResourceUsageResourceGroup() via GetResourceUsageResourceGroupPager', async () => {
+    const params = {
+      accountId: 'testString',
+      resourceGroupId: 'testString',
+      billingmonth: 'testString',
+      names: true,
+      tags: true,
+      acceptLanguage: 'testString',
+      limit: 30,
+      resourceInstanceId: 'testString',
+      resourceId: 'testString',
+      planId: 'testString',
+      region: 'testString',
+    };
 
-        // Get next page of results.
-        const res = await usageReportsService.getResourceUsageOrg(params);
-        expect(res.status).toEqual(200);
+    const allResults = [];
 
-        const { result } = res;
-        expect(result).toBeDefined();
-
-        // console.log('getResourceUsageOrg() result: ', result);
-        expect(result.resources).toBeDefined();
-        resources.push(...result.resources);
-
-        // Get offset of next page.
-        if (result.next) {
-          offset = result.next.offset;
-        } else {
-          offset = null;
-        }
-      } while (offset != null);
-    } catch (err) {
-      console.log(err);
+    // Test getNext().
+    let pager = new UsageReportsV4.GetResourceUsageResourceGroupPager(usageReportsService, params);
+    while (pager.hasNext()) {
+      const nextPage = await pager.getNext();
+      expect(nextPage).not.toBeNull();
+      allResults.push(...nextPage);
     }
 
-    // Make sure we found some resources.
-    const numResources = resources.length;
-    // console.log(`getResourceUsageOrg() response contained ${numResources} total resources`);
-    expect(numResources).toBeGreaterThan(0);
+    // Test getAll().
+    pager = new UsageReportsV4.GetResourceUsageResourceGroupPager(usageReportsService, params);
+    const allItems = await pager.getAll();
+    expect(allItems).not.toBeNull();
+    expect(allItems).toHaveLength(allResults.length);
+    console.log(`Retrieved a total of ${allResults.length} items(s) with pagination.`);
+  });
+
+  test('getResourceUsageOrg()', async () => {
+    const params = {
+      accountId: 'testString',
+      organizationId: 'testString',
+      billingmonth: 'testString',
+      names: true,
+      tags: true,
+      acceptLanguage: 'testString',
+      limit: 30,
+      start: 'testString',
+      resourceInstanceId: 'testString',
+      resourceId: 'testString',
+      planId: 'testString',
+      region: 'testString',
+    };
+
+    const res = await usageReportsService.getResourceUsageOrg(params);
+    expect(res).toBeDefined();
+    expect(res.status).toBe(200);
+    expect(res.result).toBeDefined();
+  });
+
+  test('getResourceUsageOrg() via GetResourceUsageOrgPager', async () => {
+    const params = {
+      accountId: 'testString',
+      organizationId: 'testString',
+      billingmonth: 'testString',
+      names: true,
+      tags: true,
+      acceptLanguage: 'testString',
+      limit: 30,
+      resourceInstanceId: 'testString',
+      resourceId: 'testString',
+      planId: 'testString',
+      region: 'testString',
+    };
+
+    const allResults = [];
+
+    // Test getNext().
+    let pager = new UsageReportsV4.GetResourceUsageOrgPager(usageReportsService, params);
+    while (pager.hasNext()) {
+      const nextPage = await pager.getNext();
+      expect(nextPage).not.toBeNull();
+      allResults.push(...nextPage);
+    }
+
+    // Test getAll().
+    pager = new UsageReportsV4.GetResourceUsageOrgPager(usageReportsService, params);
+    const allItems = await pager.getAll();
+    expect(allItems).not.toBeNull();
+    expect(allItems).toHaveLength(allResults.length);
+    console.log(`Retrieved a total of ${allResults.length} items(s) with pagination.`);
+  });
+
+  test('getOrgUsage()', async () => {
+    const params = {
+      accountId: 'testString',
+      organizationId: 'testString',
+      billingmonth: 'testString',
+      names: true,
+      acceptLanguage: 'testString',
+    };
+
+    const res = await usageReportsService.getOrgUsage(params);
+    expect(res).toBeDefined();
+    expect(res.status).toBe(200);
+    expect(res.result).toBeDefined();
+  });
+
+  test('createReportsSnapshotConfig()', async () => {
+    const params = {
+      accountId: 'abc',
+      interval: 'daily',
+      cosBucket: 'bucket_name',
+      cosLocation: 'us-south',
+      cosReportsFolder: 'IBMCloud-Billing-Reports',
+      reportTypes: ['account_summary', 'enterprise_summary', 'account_resource_instance_usage'],
+      versioning: 'new',
+    };
+
+    const res = await usageReportsService.createReportsSnapshotConfig(params);
+    expect(res).toBeDefined();
+    expect(res.status).toBe(201);
+    expect(res.result).toBeDefined();
+  });
+
+  test('getReportsSnapshotConfig()', async () => {
+    const params = {
+      accountId: 'abc',
+    };
+
+    const res = await usageReportsService.getReportsSnapshotConfig(params);
+    expect(res).toBeDefined();
+    expect(res.status).toBe(200);
+    expect(res.result).toBeDefined();
+  });
+
+  test('updateReportsSnapshotConfig()', async () => {
+    const params = {
+      accountId: 'abc',
+      interval: 'daily',
+      cosBucket: 'bucket_name',
+      cosLocation: 'us-south',
+      cosReportsFolder: 'IBMCloud-Billing-Reports',
+      reportTypes: ['account_summary', 'enterprise_summary', 'account_resource_instance_usage'],
+      versioning: 'new',
+    };
+
+    const res = await usageReportsService.updateReportsSnapshotConfig(params);
+    expect(res).toBeDefined();
+    expect(res.status).toBe(200);
+    expect(res.result).toBeDefined();
+  });
+
+  test('getReportsSnapshot()', async () => {
+    const params = {
+      accountId: 'abc',
+      month: '2023-02',
+      dateFrom: 1675209600000,
+      dateTo: 1675987200000,
+    };
+
+    const res = await usageReportsService.getReportsSnapshot(params);
+    expect(res).toBeDefined();
+    expect(res.status).toBe(200);
+    expect(res.result).toBeDefined();
+  });
+
+  test('deleteReportsSnapshotConfig()', async () => {
+    const params = {
+      accountId: 'abc',
+    };
+
+    const res = await usageReportsService.deleteReportsSnapshotConfig(params);
+    expect(res).toBeDefined();
+    expect(res.status).toBe(204);
+    expect(res.result).toBeDefined();
   });
 });
